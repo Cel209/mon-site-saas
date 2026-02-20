@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=ARyEnyDRJ_dsOgIwD00WVKbhWBopW9yi_xnOj6EJZCOUeH_JCdpV4fIaP4h-LunDKcdPEexbhS0oHLZI&currency=EUR"></script>
+
+    <style>
+        body { background-color: #131314; color: #e3e3e3; font-family: 'Roboto', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #444746; border-radius: 4px; }
+        .profile-menu { position: absolute; top: 60px; right: 20px; width: 320px; background-color: #2b2d31; border-radius: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); display: none; z-index: 60; padding: 10px; border: 1px solid #444; }
+        .profile-menu.show { display: block; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 100; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: #1e1f20; padding: 24px; border-radius: 16px; width: 90%; max-w: 450px; border: 1px solid #444; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <div id="sidebar" class="bg-[#1e1f20] w-[280px] flex-col justify-between hidden md:flex relative z-30">
+        <div class="p-4">
+            <button onclick="toggleSidebar()" class="mb-6 p-2 text-gray-400 hover:bg-[#3c4043] rounded-full"><i class="fas fa-bars text-xl"></i></button>
+            <div onclick="startNewChat()" class="bg-[#131314] hover:bg-[#2b2d31] text-[#e3e3e3] px-4 py-3 rounded-full flex items-center gap-3 cursor-pointer mb-6 border border-transparent hover:border-gray-600 transition">
+                <i class="fas fa-plus text-gray-400"></i> <span class="text-sm font-medium">Nouvelle discussion</span>
+            </div>
+            <div class="px-2">
+                <div class="text-xs font-bold text-gray-500 mb-3 px-2">RÉCENT</div>
+                <div id="history-list" class="space-y-1 overflow-y-auto max-h-[40vh]"></div>
+            </div>
+        </div>
+
+        <div class="p-3 mt-auto space-y-1">
+            <a href="https://discord.com/oauth2/authorize?client_id=1461086572630774003&permissions=8&integration_type=0&scope=bot+applications.commands" target="_blank" class="px-4 py-2 text-sm hover:bg-[#5865F2] hover:text-white rounded-full cursor-pointer flex gap-3 items-center text-[#5865F2] transition font-medium">
+                <i class="fab fa-discord w-5 text-lg"></i> Ajouter au Discord
+            </a>
+            <div class="border-t border-gray-700 my-2 mx-4"></div>
+            <div onclick="openModal('help-modal')" class="px-4 py-2 text-sm hover:bg-[#2b2d31] rounded-full cursor-pointer flex gap-3 items-center"><i class="far fa-question-circle w-5"></i> Aide</div>
+            <div onclick="openModal('activity-modal')" class="px-4 py-2 text-sm hover:bg-[#2b2d31] rounded-full cursor-pointer flex gap-3 items-center"><i class="fas fa-history w-5"></i> Activité</div>
+            <div onclick="openModal('settings-modal')" class="px-4 py-2 text-sm hover:bg-[#2b2d31] rounded-full cursor-pointer flex gap-3 items-center"><i class="fas fa-cog w-5"></i> Paramètres</div>
+            <div class="mt-4 px-4 text-[10px] text-gray-500 flex items-center gap-2"><span class="w-2 h-2 bg-green-500 rounded-full"></span> Paris, France</div>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col relative bg-[#131314]">
+        <div class="absolute top-4 right-4 z-50">
+            {% if user.is_authenticated %}
+                <img onclick="toggleProfile()" src="{{ user.picture }}" class="w-10 h-10 rounded-full border border-gray-600 cursor-pointer hover:ring-2 hover:ring-gray-500 transition">
+                <div id="profile-menu" class="profile-menu">
+                    <div class="text-center p-4">
+                        <div class="text-sm font-bold text-white">{{ user.email }}</div>
+                        <div class="text-xs text-gray-400 mt-1">{{ user.name }}</div>
+                        {% if user.is_vip %}
+                            <div class="mt-2 text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded inline-block">✨ Compte VIP Actif</div>
+                        {% else %}
+                            <div class="mt-2 text-xs text-gray-400">{{ user.credits }} crédits restants</div>
+                        {% endif %}
+                    </div>
+                    {% if not user.is_vip %}
+                    <div class="px-4 pb-2">
+                        <button onclick="openModal('vip-modal')" class="w-full bg-gradient-to-r from-[#d96570] to-[#9b72cb] text-white py-2 rounded-lg text-sm font-bold hover:opacity-90 flex items-center justify-center gap-2 transition transform active:scale-95">
+                            <i class="far fa-gem"></i> Devenir VIP
+                        </button>
+                    </div>
+                    {% endif %}
+                    <div class="border-t border-gray-600 my-2"></div>
+                    <a href="/privacy" target="_blank" class="block px-4 py-2 text-sm hover:bg-[#3c4043] rounded-lg text-gray-400"><i class="fas fa-user-shield w-5"></i> Confidentialité</a>
+                    <a href="/terms" target="_blank" class="block px-4 py-2 text-sm hover:bg-[#3c4043] rounded-lg text-gray-400"><i class="fas fa-file-contract w-5"></i> Conditions (CGU)</a>
+                    <div class="border-t border-gray-600 my-2"></div>
+                    <a href="/logout" class="block px-4 py-2 text-sm hover:bg-[#3c4043] rounded-lg text-red-400"><i class="fas fa-sign-out-alt w-5"></i> Se déconnecter</a>
+                </div>
+            {% else %}
+                <a href="/login" class="bg-blue-600 px-5 py-2 rounded-full text-white text-sm font-bold">Connexion</a>
+            {% endif %}
+        </div>
+
+        <div id="chat-container" class="flex-1 flex flex-col items-center p-4 w-full max-w-4xl mx-auto transition-all duration-300">
+            <div id="welcome-screen" class="flex-1 flex flex-col justify-center w-full max-w-3xl mb-10">
+                <h1 class="text-6xl font-medium mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-red-400">Bonjour, {{ user.name.split(' ')[0] if user.name else 'toi' }}</h1>
+                <h2 class="text-6xl font-medium text-[#444746] mb-12">Comment puis-je t'aider ?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div class="bg-[#1e1f20] p-4 rounded-xl h-44 hover:bg-[#2b2d31] cursor-pointer relative group transition">
+                        <span class="text-gray-300 text-sm">Générer une image</span>
+                        <div class="absolute bottom-4 right-4 bg-black/50 p-2 rounded-full"><i class="fas fa-image"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div id="chat-box" class="flex-1 w-full max-w-3xl overflow-y-auto hidden space-y-8 pb-32"></div>
+            <div class="w-full max-w-3xl relative mt-auto">
+                <div id="image-preview" class="hidden mb-2 ml-4"><img id="preview-img" class="h-24 rounded-lg border border-gray-600 shadow-xl"></div>
+                <div class="bg-[#1e1f20] rounded-[28px] p-2 flex items-center gap-2 border border-gray-700 focus-within:bg-[#2b2d31] transition">
+                    <label class="p-3 text-gray-400 hover:text-white cursor-pointer rounded-full hover:bg-gray-700 transition">
+                        <i class="fas fa-plus-circle text-xl"></i>
+                        <input type="file" id="image-input" class="hidden" accept="image/*" onchange="previewImage()">
+                    </label>
+                    <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-white text-lg outline-none resize-none py-3 px-2" placeholder="Demander à Gemini 3" onkeypress="handleEnter(event)"></textarea>
+                    <button onclick="sendMessage()" class="p-3 text-white rounded-full hover:bg-gray-700 transition"><i class="fas fa-paper-plane text-lg"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="vip-modal" class="modal-overlay" onclick="closeModal(event, 'vip-modal')">
+        <div class="modal-box text-center">
+            <h2 class="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Devenir VIP</h2>
+            <p class="text-gray-400 mb-6 text-sm">Paiement unique de 5.00 EUR</p>
+            
+            <div id="paypal-button-container" class="mb-4"></div>
+
+            <hr class="border-gray-700 my-4">
+            <div class="mt-4">
+                <p class="text-gray-500 text-xs mb-2">Ou entrer une clé manuellement :</p>
+                <input type="text" id="vip-key-input" placeholder="VIP-XXXX" class="bg-black/30 border border-gray-600 rounded px-2 py-1 text-white text-center text-sm w-1/2">
+                <button onclick="activateVip()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm ml-2">OK</button>
+                <p id="vip-msg" class="text-xs mt-2 h-4"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay" onclick="closeModal(event, 'settings-modal')"><div class="modal-box"><h2 class="text-xl font-bold mb-4">Paramètres</h2><button onclick="clearHistory()" class="text-red-400">Effacer l'historique</button></div></div>
+    <div id="activity-modal" class="modal-overlay" onclick="closeModal(event, 'activity-modal')"><div class="modal-box"><h2 class="text-xl font-bold mb-4">Votre Activité</h2><p class="text-gray-400 text-sm">Stockage local.</p></div></div>
+    <div id="help-modal" class="modal-overlay" onclick="closeModal(event, 'help-modal')"><div class="modal-box"><h2 class="text-xl font-bold mb-4">Aide</h2><button onclick="document.getElementById('help-modal').style.display='none'" class="bg-blue-600 px-4 py-2 rounded">OK</button></div></div>
+
+    <script>
+        let currentChatId = null;
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('hidden'); document.getElementById('sidebar').classList.toggle('flex'); }
+        function toggleProfile() { document.getElementById('profile-menu').classList.toggle('show'); }
+        window.onclick = function(e) { if (!e.target.matches('img') && !e.target.closest('.profile-menu')) document.getElementById('profile-menu').classList.remove('show'); }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(e, id) { if(e.target.id === id) document.getElementById(id).style.display = 'none'; }
+        function previewImage() { let input = document.getElementById('image-input'); if(input.files[0]) { let r = new FileReader(); r.onload = function(e) { document.getElementById('preview-img').src=e.target.result; document.getElementById('image-preview').classList.remove('hidden'); }; r.readAsDataURL(input.files[0]); } }
+        async function loadHistory() { try { let res = await fetch('/api/history'); let chats = await res.json(); let list = document.getElementById('history-list'); list.innerHTML=""; chats.forEach(c => list.innerHTML += `<div onclick="loadChat(${c.id})" class="px-4 py-2 text-sm truncate hover:bg-[#2b2d31] rounded-full cursor-pointer flex gap-3 text-gray-300">${c.title}</div>`); } catch(e){} }
+        loadHistory();
+        function startNewChat() { currentChatId=null; document.getElementById('chat-box').innerHTML=""; document.getElementById('chat-box').classList.add('hidden'); document.getElementById('welcome-screen').classList.remove('hidden'); }
+        async function loadChat(id) { currentChatId=id; let res = await fetch(`/api/load_chat/${id}`); let data=await res.json(); document.getElementById('welcome-screen').classList.add('hidden'); let box=document.getElementById('chat-box'); box.classList.remove('hidden'); box.innerHTML=""; data.messages.forEach(m => displayMessage(m.content, m.role==='user')); }
+        async function clearHistory() { if(confirm("Supprimer ?")) { await fetch('/api/clear_history',{method:'POST'}); window.location.reload(); } }
+        async function sendMessage() { let i=document.getElementById("user-input"); let t=i.value.trim(); let f=document.getElementById('image-input'); if(!t && !f.files[0]) return; document.getElementById('welcome-screen').classList.add('hidden'); let b=document.getElementById("chat-box"); b.classList.remove('hidden'); displayMessage(t, true); let fd=new FormData(); fd.append('message', t); if(currentChatId) fd.append('chat_id', currentChatId); if(f.files[0]) fd.append('image', f.files[0]); i.value=""; document.getElementById('image-preview').classList.add('hidden'); try { let r=await fetch('/api/message',{method:'POST',body:fd}); let d=await r.json(); if(d.error==="login") window.location.href="/login"; if(d.reponse && d.reponse.includes("Crédits")) { openModal('vip-modal'); return; } currentChatId=d.chat_id; displayMessage(d.reponse, false); loadHistory(); } catch(e){} }
+        function displayMessage(t,u) { let b=document.getElementById("chat-box"); b.innerHTML += u ? `<div class="flex justify-end mb-6"><div class="bg-[#2b2d31] text-[#e3e3e3] px-5 py-3 rounded-2xl max-w-[85%]">${t}</div></div>` : `<div class="flex gap-4 mb-8"><div class="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" class="w-5"></div><div class="prose prose-invert max-w-none text-[#e3e3e3]">${marked.parse(t)}</div></div>`; b.scrollTop=b.scrollHeight; }
+        function handleEnter(e) { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+
+        // PAYPAL AUTOMATIQUE
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({ purchase_units: [{ amount: { value: '5.00' } }] });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    document.getElementById('vip-msg').innerText = "Paiement réussi ! Activation...";
+                    fetch('/api/generate_vip_key', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            fetch('/api/activate_vip', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key:data.key})})
+                            .then(() => {
+                                alert("Paiement reçu ! Vous êtes VIP. Clé de secours: " + data.key);
+                                window.location.reload();
+                            });
+                        });
+                });
+            }
+        }).render('#paypal-button-container');
+
+        async function activateVip() {
+            let key = document.getElementById('vip-key-input').value;
+            let msg = document.getElementById('vip-msg');
+            msg.innerText = "Vérification...";
+            let res = await fetch('/api/activate_vip', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key:key})});
+            let data = await res.json();
+            if(data.success) { msg.innerText="Succès !"; msg.className="text-green-500 text-xs"; setTimeout(()=>window.location.reload(),1000); }
+            else { msg.innerText=data.message; msg.className="text-red-500 text-xs"; }
+        }
+    </script>
+</body>
+</html>

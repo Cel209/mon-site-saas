@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Pro - L'IA Nouvelle Génération</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: white; overflow-x: hidden; }
+        .gradient-text { background: linear-gradient(to right, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-glow { position: absolute; top: -10%; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(0,0,0,0) 70%); z-index: -1; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <nav class="flex justify-between items-center p-6 max-w-7xl mx-auto w-full z-10">
+        <div class="text-2xl font-bold tracking-tighter flex items-center gap-2">
+            <i class="fas fa-brain text-blue-500"></i> GEMINI<span class="text-gray-500">PRO</span>
+        </div>
+        <div>
+            <a href="/login" class="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-gray-200 transition">
+                Connexion
+            </a>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col items-center justify-center text-center px-4 relative mt-10 md:mt-20">
+        <div class="hero-glow"></div>
+        
+        <span class="border border-gray-700 bg-gray-900/50 rounded-full px-4 py-1 text-sm text-gray-400 mb-6 animate-pulse">
+            ✨ Nouveau : Modèle Gemini 2.0 Flash disponible
+        </span>
+
+        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight max-w-4xl">
+            L'Intelligence Artificielle <br>
+            <span class="gradient-text">Plus Rapide. Plus Visuelle.</span>
+        </h1>
+
+        <p class="text-gray-400 text-lg md:text-xl max-w-2xl mb-10">
+            Discutez, analysez des images et générez du contenu avec notre assistant le plus avancé. 
+            Gratuit pour démarrer, puissant pour les pros.
+        </p>
+
+        <div class="flex flex-col md:flex-row gap-4">
+            <a href="/login" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition shadow-lg shadow-blue-900/20">
+                <i class="fab fa-google"></i> Continuer avec Google
+            </a>
+            <a href="#features" class="glass-card px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/5 transition">
+                En savoir plus
+            </a>
+        </div>
+
+        <div class="mt-20 relative w-full max-w-5xl">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
+            <img src="https://storage.googleapis.com/gweb-uniblog-publish-prod/original_images/Gemini_SS.jpg" class="rounded-t-3xl border border-gray-800 shadow-2xl opacity-80" alt="Interface Demo">
+        </div>
+    </main>
+
+    <section id="features" class="py-20 bg-[#0a0a0a]">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="glass-card p-8 rounded-2xl">
+                <div class="bg-blue-500/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-blue-400 text-2xl">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Ultra Rapide</h3>
+                <p class="text-gray-500">Réponses instantanées grâce à l'architecture Flash. Plus d'attente, discutez en temps réel.</p>
+            </div>
+            
+            <div class="glass-card p-8 rounded-2xl">
+                <div class="bg-purple-500/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-purple-400 text-2xl">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Vision Multimodale</h3>
+                <p class="text-gray-500">Envoyez des images, des graphiques ou des photos. L'IA les analyse et vous répond.</p>
+            </div>
+
+            <div class="glass-card p-8 rounded-2xl">
+                <div class="bg-green-500/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-green-400 text-2xl">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Sécurisé & Privé</h3>
+                <p class="text-gray-500">Vos données sont protégées. Connectez-vous simplement avec votre compte Google existant.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="border-t border-gray-800 py-8 text-center text-gray-600 text-sm">
+        <p>&copy; 2024 Gemini Pro Bot. Tous droits réservés.</p>
+    </footer>
+
+</body>
+</html>
